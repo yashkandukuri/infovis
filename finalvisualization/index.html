@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<html> 
+  <script src="https://d3js.org/d3.v4.min.js"></script>
+  <script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+ <title>Homework 9</title>
+ <head>
+  <b><i><h1 align = "center">The beginner's guide to writing a successful story without procrastinating.</h1></i></b>
+  <p align = "center"><i>a so-called-guide by Yash Kandukuri</i></p>
+ </head>
+<style>   
+  body {font-family: garamond;} 
+  .axis {font: 14px garamond;}
+  .label {font: 16px garamond;}
+
+.tooltip {
+  position: absolute;
+  width: 150px;
+  height: 60px;
+  background: #f2f2f2;
+  pointer-events: none;
+}
+</style>
+
+<body>
+<p><i><u>Disclaimer:</u> I am narrating my observations in the form of a story. I will be using names of people just so that my story progresses. Everything is original and resemblance to any person living or dead is purely coincidental.</i></p><br>
+<h3 align="center">Act 1</h3>
+<img src="image for the project.jpeg" alt="ComicStrip" height="600" width="700" align="center"><br>
+<p>As Oliver Silver sat down to write a screenplay, he realized that he couldn't type a word. It was as if the part of his brain that produced ideas had a power breakdown. Suddenly, an 'idea' struck him. Not an idea for a story but for something else. He decided to take some 'inspiration'. He realized that he could analyze existing films and maybe, that could give him ideas. According to him a successful movie is the movie that receives a thumbs up from the audience. However, he also wanted his movie to make money at the box office. He proceeded to check if there is a pattern that would help him write the script for a movie that is going to receive good ratings and be successful.</p><br>
+<h3 align="center">Act 2</h3><br>
+<h2>Scatterplot for Popularity vs Revenue</h2>
+  <div><svg id="chart" width="800" height="600" align="center"></svg>
+  <p>At first, Oliver decided to check whether the promotions of a film affect its success rate. So, he gathered a list of movies and plotted them in the form of a scatterplot. The movies that were successful were reprsented in <font color="blue">blue</font> while the movies that were unsuccessful were represented in <font color ="red">red</font>. He noticed that though there were successful films without promotion, all the successful films were highly promoted. Since he could not make any further inferences, he decided to dive deep.</p></div>
+<h2>Scatterplot for Runtime vs Rating</h2>  
+  <div><svg id="chart1" width="800" height="600" align="center"></svg>
+  <p>Oliver later proceeded to check whether the runtime would affect the ratings of a film. He gathered a list of movies that had at least 1000 votes from viewers. He found out that movies with ratings of 8 and above had more than 80 minutes runtime. If every page in a screenplay is a minute, he had to write a screenplay of at least 80 pages. He decided to write a screenplay of 150 pages just to be on the safe side. He then decided to check out only the movies that had ratings of 8 and above so that he can draw a conclusion.</p></div>
+<h2>Scatterplot of Revenue vs Rating</h2>
+  <div><svg id="chart2" width="800" height="600" align="center"></svg>
+ <p>Oliver gathered all the movies with a rating of 8 and more. In the plot, he realized that all the movies that were adapted from novels were in <font color='blue'>blue</font> while the movies that were not adapted from novels were represented in <font color='gray'>gray.</font> He decided that he would write a screenplay that is adapted from a novel. He was relieved. He doesn't have to look for ideas anymore. But, he still wanted to make few more observations. So, he tweaked the existing graph a litte.</p></div>
+<h2>Barchart chart comparing Budget and Revenue</h2>
+  <div><svg id="chart3" width="800" height="600" align="center"></svg>
+ <p>Oliver wanted to check if novel adaptations are more successful in comparison. So, he took the average budget and revenue of movies belonging to both the categories - novel adaptations and non-novel adaptations.</p></div>
+<h3 align="center">The Final Act</h3>
+<div><p>Oliver decided to check this further. He wanted to compare the novel adaptations with the non-novel adaptations. All the questions he has are answered <a href="final visualization.html" target="_blank">here</a>.</p></div>
+<script>
+var svg = d3.select("#chart"), 
+    margin = {top: 20, right: 20, bottom: 50, left: 70},
+    width = +svg.attr("width") - margin.left - margin.right,
+    height = +svg.attr("height") - margin.top - margin.bottom;
+
+var g = svg.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var colorScale = d3.scaleOrdinal(d3.schemeCategory20);
+// add the tooltip area to the webpage
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+// load data
+d3.csv("testing.csv", function (d) {
+  // change string (from CSV) into number format
+  d["popularity"] = +d["popularity"];
+  d["log_revenue"] = +d["log_revenue"];
+  d["budget"] = +d["budget"];
+  return d;
+}, function(error, data) {
+
+	if (error) throw error;
+  
+/* 
+ * value accessor - returns the value to encode for a given data object.
+ * scale - maps value to a visual display encoding, such as a pixel position.
+ * map function - maps from data value to display value
+ */ 
+
+// setup x 
+var xValue = function(d) { return d["popularity"];}, // data -> value
+    xScale = d3.scaleLinear().range([0, width]),     // value -> display
+    xMap = function(d) { return xScale(xValue(d));}; // data -> display
+  
+
+// setup y
+var yValue = function(d) { return d["log_revenue"];}, // data -> value
+    yScale = d3.scaleLinear().range([height, 0]),    // value -> display
+    yMap = function(d) { return yScale(yValue(d));}; // data -> display
+  // don't want dots overlapping axis, so add in buffer to data domain
+  xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
+  yScale.domain([0, d3.max(data, yValue)+1]);
+
+  // x-axis
+  g.append("g")
+ 		.attr("class", "axis x-axis")
+  	.attr("transform", "translate(0," + height + ")") // move axis to bottom of chart
+   	.call(d3.axisBottom(xScale));
+  
+  // x-axis label
+  g.append("text")
+  	.attr("class", "label")
+   	.attr("x", width/2)
+    .attr("y", height+(margin.bottom*0.75))
+    .style("text-anchor", "middle")
+    .text("Popularity");
+
+  // y-axis
+  g.append("g")
+ 		.attr("class", "axis y-axis")
+ 		.call(d3.axisLeft(yScale))
+    .selectAll("text")  
+     .style("text-anchor", "end")
+     .attr("dx", "-.8em")
+     .attr("dy", ".15em")
+     .attr("transform", "rotate(-45)");
+  
+  // y-axis label
+  g.append("text") 
+    .attr("class", "label")
+    .attr("x", 0-(height/2))
+    .attr("y", 0-(margin.left*0.55))
+    .attr("transform", "rotate(-90)") // rotate text -90 degrees from x, y
+    .style("text-anchor", "middle")
+    .text("Log of Revenue");
+
+  
+  // draw dots
+  g.selectAll(".dot")
+      .data(data)
+      
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", xMap)
+      .attr("cy", yMap)
+      .style("fill", function (d) {
+       if (d.revenue > d.budget) {return 'blue';}
+ 		      else {return 'red';};})
+      .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)         // ms delay before appearing
+               .style("opacity", .8); // tooltip appears on mouseover
+          tooltip.html('Name:' + d.title + "<br/> " + 'Year:' + d.release_date + "<br/> " + 'IMDb rating:' + d.vote_average + "<br/>" + 'Revenue:' + d.revenue + "<br/>" + 'Budget:' + d.budget)
+               .style("left", (d3.event.pageX + 10) + "px")  // specify x location
+               .style("top", (d3.event.pageY - 28) + "px");  // specify y location
+	        
+      })
+      .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0) // disappear on mouseout
+               
+      });
+ });	   
+////sequel
+var svg1 = d3.select("#chart1"), 
+    margin = {top: 20, right: 20, bottom: 50, left: 70},
+    width = +svg1.attr("width") - margin.left - margin.right,
+    height = +svg1.attr("height") - margin.top - margin.bottom;
+
+var g1 = svg1.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+var colorScale = d3.scaleOrdinal(d3.schemeCategory20);
+// add the tooltip area to the webpage
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+// load data
+d3.csv("runtimevsrating.csv", function (d) {
+  // change string (from CSV) into number format
+  d["vote_average"] = +d["vote_average"];
+  d["runtime"] = +d["runtime"];
+  d["revenue"] = +d["revenue"];
+  d["budget"]  = +d["budget"];
+  return d;
+}, function(error, data) {
+
+	if (error) throw error;
+  
+/* 
+ * value accessor - returns the value to encode for a given data object.
+ * scale - maps value to a visual display encoding, such as a pixel position.
+ * map function - maps from data value to display value
+ */ 
+  
+// setup x 
+var x1Value = function(d) { return d["vote_average"];}, // data -> value
+    x1Scale = d3.scaleLinear().range([0, width]),     // value -> display
+    x1Map = function(d) { return x1Scale(x1Value(d));}; // data -> display
+  
+
+// setup y
+var y1Value = function(d) { return d["runtime"];}, // data -> value
+    y1Scale = d3.scaleLinear().range([height, 0]),    // value -> display
+    y1Map = function(d) { return y1Scale(y1Value(d));}; // data -> display
+  // don't want dots overlapping axis, so add in buffer to data domain
+  x1Scale.domain([d3.min(data, x1Value)-1, d3.max(data, x1Value)+1]);
+  y1Scale.domain([0, d3.max(data, y1Value)+1]);
+
+  // x-axis
+  g1.append("g")
+ 		.attr("class", "axis x-axis")
+  	.attr("transform", "translate(0," + height + ")") // move axis to bottom of chart
+   	.call(d3.axisBottom(x1Scale));
+  
+  // x-axis label
+  g1.append("text")
+  	.attr("class", "label")
+   	.attr("x", width/2)
+    .attr("y", height+(margin.bottom*0.75))
+    .style("text-anchor", "middle")
+    .text("Rating");
+
+  // y-axis
+  g1.append("g")
+ 		.attr("class", "axis y-axis")
+ 		.call(d3.axisLeft(y1Scale));
+  
+  // y-axis label
+  g1.append("text") 
+    .attr("class", "label")
+    .attr("x", 0-(height/2))
+    .attr("y", 0-(margin.left*0.55))
+    .attr("transform", "rotate(-90)") // rotate text -90 degrees from x, y
+    .style("text-anchor", "middle")
+    .text("Runtime");
+
+  
+  // draw dots
+  g1.selectAll(".dot")
+      .data(data)
+      
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 3.5)
+      .attr("cx", x1Map)
+      .attr("cy", y1Map)
+      .style("fill", function (d) {return colorScale('Blue');})
+		      
+		      
+      // tooltip
+      .on("mouseover", function(d) {
+          tooltip.transition()
+               .duration(200)         // ms delay before appearing
+               .style("opacity", .8); // tooltip appears on mouseover
+          tooltip.html('Name of the film:' + d["title"] + "<br/> " + 'Year:' + d.release_date + "<br/> " + 'IMDb rating:' + d.vote_average + "<br/>" + 'Revenue:' + d.revenue + "<br/>" + 'Budget:' + d.budget)
+               .style("left", (d3.event.pageX + 10) + "px")  // specify x location
+               .style("top", (d3.event.pageY - 28) + "px");  // specify y location
+	        
+      })
+      .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0) // disappear on mouseout
+               
+      });
+ });
+
+////seequel
+var svg2 = d3.select("#chart2"), 
+    margin = {top: 20, right: 20, bottom: 50, left: 70},
+    width = +svg2.attr("width") - margin.left - margin.right,
+    height = +svg2.attr("height") - margin.top - margin.bottom;
+
+var g2 = svg2.append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+//var colorScale = d3.scaleOrdinal(d3.schemeCategory20);
+// add the tooltip area to the webpage
+var tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0);
+
+
+// load data
+d3.csv("novel-adaptations.csv", function (d) {
+  // change string (from CSV) into number format
+  d["release_date"] = +d["release_date"];
+  d["vote_average"] = +d["vote_average"];
+  d["budget"] = +d["budget"];
+  d["revenue"] = +d["revenue"];
+  return d;
+}, function(error, data) {
+
+	if (error) throw error;
+   
+// setup x 
+var x2Value = function(d) { return d["vote_average"];}, // data -> value
+    x2Scale = d3.scaleLinear().range([0, width]),     // value -> display
+    x2Map = function(d) { return x2Scale(x2Value(d));}; // data -> display
+  
+
+// setup y
+var y2Value = function(d) { return d["revenue"];}, // data -> value
+    y2Scale = d3.scaleLinear().range([height, 0]),    // value -> display
+    y2Map = function(d) { return y2Scale(y2Value(d));}; // data -> display
+
+  // don't want dots overlapping axis, so add in buffer to data domain
+  x2Scale.domain([d3.min(data, x2Value)-1, d3.max(data, x2Value)+1]);
+  y2Scale.domain([0, d3.max(data, y2Value)+1]);
+
+  // x-axis
+  g2.append("g")
+ 		.attr("class", "axis x-axis")
+  	.attr("transform", "translate(0," + height + ")") // move axis to bottom of chart
+   	.call(d3.axisBottom(x2Scale));
+  
+  // x-axis label
+  g2.append("text")
+  	.attr("class", "label")
+   	.attr("x", width/2)
+    .attr("y", height+(margin.bottom*0.75))
+    .style("text-anchor", "middle")
+    .text("IMDb rating");
+
+  // y-axis
+  g2.append("g")
+ 		.attr("class", "axis y-axis")
+ 		.call(d3.axisLeft(y2Scale))
+    .selectAll("text")  
+    .style("text-anchor", "end")
+    .attr("dx", "-.8em")
+    .attr("dy", ".15em")
+    .attr("transform", "rotate(-45)");
+  
+  // y-axis label
+  g2.append("text") 
+    .attr("class", "label")
+    .attr("x", 0-(height/2))
+    .attr("y", 0-(margin.left*0.55))
+    .attr("transform", "rotate(-90)") // rotate text -90 degrees from x, y
+    .style("text-anchor", "middle")
+    .text("Revenue");
+
+  // draw dots
+  g2.selectAll(".dot")
+      .data(data)
+      
+    .enter().append("circle")
+      .attr("class", "dot")
+      .attr("r", 5.5)
+      .attr("cx", x2Map)
+      .attr("cy", y2Map)
+      .style("fill", function (d) {
+ 		      
+		      if (d["Novel Adaptation"] === 'Yes') {return 'blue';}
+ 		      else {return 'gray';};
+		      
+	    })//tried to use colorScale but was unable to generate a common color for all the conferences
+
+      // tooltip
+      .on("mouseover", function(d) {   
+      tooltip.transition()
+               .duration(200)         // ms delay before appearing
+               .style("opacity", .8); // tooltip appears on mouseover
+          tooltip.html('Name:' + d.title + "<br/> " + 'Year:' + d.release_date + "<br/> " + 'IMDb rating:' + d.vote_average + "<br/>" + 'Revenue:' + d.revenue + "<br/>" + 'Budget:' + d.budget)
+               .style("left", (d3.event.pageX + 10) + "px")  // specify x location
+               .style("top", (d3.event.pageY - 28) + "px");  // specify y location
+	             
+      })
+
+    
+    .on("mouseout", function(d) {
+          tooltip.transition()
+               .duration(500)
+               .style("opacity", 0) // disappear on mouseout
+               
+      });
+ });
+//seeequel final
+var svg3 = d3.select("#chart3"),
+    margin = {top: 20, right: 20, bottom: 30, left: 40},
+    width = +svg3.attr("width") - margin.left - margin.right,
+    height = +svg3.attr("height") - margin.top - margin.bottom,
+    g3 = svg3.append("g").attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+var ex0 = d3.scaleBand()
+    .rangeRound([0, width])
+    .paddingInner(0.1);
+
+var ex1 = d3.scaleBand()
+    .padding(0.05);
+
+var ey = d3.scaleLinear()
+    .rangeRound([height, 0]);
+
+var z = d3.scaleOrdinal()
+    .range(["#d0743c", "#ff8c00"]);
+
+d3.csv("mine.csv", function(d, i, columns) {
+  for (var i = 1, n = columns.length; i < n; ++i) d[columns[i]] = +d[columns[i]];
+  return d;
+}, function(error, data) {
+  if (error) throw error;
+
+  var keys = data.columns.slice(1);
+
+  ex0.domain(data.map(function(d) { return d.Type; }));
+  ex1.domain(keys).rangeRound([0, ex0.bandwidth()]);
+  ey.domain([0, d3.max(data, function(d) { return d3.max(keys, function(key) { return d[key]; }); })]).nice();
+  
+  
+
+  g3.append("g")
+    .selectAll("g")
+    .data(data)
+    .enter().append("g")
+      .attr("transform", function(d) { return "translate(" + ex0(d.Type) + ",0)"; })
+    .selectAll("rect")
+    .data(function(d) { return keys.map(function(key) { return {key: key, value: d[key]}; }); })
+    .enter().append("rect")
+      .attr("x", function(d) { return ex1(d.key); })
+      .attr("y", function(d) { return ey(d.value); })
+      .attr("width", ex1.bandwidth())
+      .attr("height", function(d) { return height - ey(d.value); })
+      .attr("fill", function(d) { return z(d.key); });
+
+  g3.append("g")
+      .attr("class", "axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(d3.axisBottom(ex0));
+
+  g3.append("g")
+      .attr("class", "axis")
+      .call(d3.axisLeft(ey).ticks(null, "s"))
+    .append("text")
+      .attr("x", 2)
+      .attr("y", ey(ey.ticks().pop()) + 0.5)
+      .attr("dy", "0.32em")
+      .attr("fill", "#000")
+      .attr("font-weight", "bold")
+      .attr("text-anchor", "start")
+      .text("In Millions");
+
+  var legend = g3.append("g")
+      .attr("font-family", "sans-serif")
+      .attr("font-size", 10)
+      .attr("text-anchor", "end")
+    .selectAll("g")
+    .data(keys.slice().reverse())
+    .enter().append("g")
+      .attr("transform", function(d, i) { return "translate(0," + i * 20 + ")"; });
+
+  legend.append("rect")
+      .attr("x", width - 19)
+      .attr("width", 19)
+      .attr("height", 19)
+      .attr("fill", z);
+      
+
+  legend.append("text")
+      .attr("x", width - 24)
+      .attr("y", 9.5)
+      .attr("dy", "0.32em")
+      .text(function(d) { return d; });
+  
+  
+});
+</script>
+</body>
+</html>
